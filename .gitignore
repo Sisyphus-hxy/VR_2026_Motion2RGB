@@ -29,3 +29,37 @@ Backups/
 ValidationProject/
 Presentation/Tooling/tmp/
 Assets/Motion2RGB/Exports/
+
+# Local backups, logs, and presentation build scratch directories
+.backup*/
+.pptx-build-*/
+.svg_final.candidate*/
+*.log
+
+# Downloaded presentation tools, environments, and browser profiles
+Presentation/Tooling/
+node_modules/
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+
+# Windows player output (the portable demo is kept in Robot.zip)
+/Robot/
+/Presentation/MonoBleedingEdge/
+/Presentation/*_Data/
+/Presentation/*_BurstDebugInformation_DoNotShip/
+/Presentation/*.exe
+/Presentation/*.dll
+
+# Duplicate presentation exports and packaged source archive
+/Presentation/Exports/Motion2RGB_Source.zip
+/Presentation/Motion2RGB_Proposal_ppt169_20261012/exports/
+/Presentation/Motion2RGB_Proposal_ppt169_20261012/live_preview/
+
+# Local secrets and operating system state
+.env
+.env.*
+!.env.example
+.DS_Store
+Thumbs.db

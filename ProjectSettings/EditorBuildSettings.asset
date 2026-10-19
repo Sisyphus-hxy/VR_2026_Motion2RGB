@@ -8,4 +8,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Motion2RGB/Scenes/Motion2RGB_Robot.unity
     guid: 5ee8df89e3c49a14baef4a1b9d7eed5c
+  - enabled: 0
+    path: Assets/Motion2RGB/Scenes/Motion2RGB_Robot 1.unity
+    guid: 2f813f430280cd84b9c8b615b7cf4472
   m_configObjects: {}
