@@ -1,0 +1,15 @@
+{
+  "slides": 7,
+  "notes": 7,
+  "native_shapes": 152,
+  "editable_text_runs": 124,
+  "native_formulas": 3,
+  "embedded_video_original_sha256": "af865105ecc442b74a4ade432b4ce79845a7c609576fa0bc7d5602b911ea84f4",
+  "video_duration_seconds": 20.57,
+  "relationships": "all resolved",
+  "pdf_pages": 7,
+  "png_previews": 7,
+  "visual_review": "all seven slides inspected; Chinese and formulas render correctly",
+  "render_application": "WPS Presentation 12.1 (registered as PowerPoint COM)",
+  "playback": "embedded original verified; playback on classroom computer remains to be checked"
+}

@@ -1,0 +1,1 @@
+系统使用 Unity 二零二二的 Built-in 管线。控制器先移动 PlayerRig，运动测量模块读取位姿变化，步态模块同时驱动头部扰动和机器人的程序化动作。两条成像分支共享同一个室内场景。Clean 相机提供稳定的基础位姿参考，Degraded 相机接收步态扰动，并通过 OnRenderImage 调用自定义 Shader。两台相机输出各自的 RenderTexture，最后由 UGUI 并排显示。UI 已接入速度、步幅、扰动幅度、模糊强度和曝光代理参数。Same Pose 会把退化相机复制到 Clean 位姿，用于单独比较图像后处理。
