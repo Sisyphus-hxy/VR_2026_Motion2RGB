@@ -28,6 +28,11 @@ Shader "Hidden/Motion2RGB/DirectionalMotionBlur"
             int _Mode;
             fixed4 _Tint;
 
+            // Keep the public C# interface identical to the original component.
+            // These are internal reconstruction constants rather than new artist controls.
+            static const float kDepthRejectThreshold = 0.35;
+            static const float kNeighborhoodClamp = 0.35;
+
             float Hash21(float2 p)
             {
                 p = frac(p * float2(123.34, 456.21));
@@ -41,6 +46,38 @@ Shader "Hidden/Motion2RGB/DirectionalMotionBlur"
                 if (_MainTex_TexelSize.y < 0) uv.y = 1.0 - uv.y;
                 #endif
                 return uv;
+            }
+
+            float3 NeighborhoodMin(float2 uv)
+            {
+                float2 texel = abs(_MainTex_TexelSize.xy);
+                float3 result = tex2D(_MainTex, uv).rgb;
+                result = min(result, tex2D(_MainTex, saturate(uv + float2(-texel.x, 0.0))).rgb);
+                result = min(result, tex2D(_MainTex, saturate(uv + float2(texel.x, 0.0))).rgb);
+                result = min(result, tex2D(_MainTex, saturate(uv + float2(0.0, -texel.y))).rgb);
+                result = min(result, tex2D(_MainTex, saturate(uv + float2(0.0, texel.y))).rgb);
+                result = min(result, tex2D(_MainTex, saturate(uv + float2(-texel.x, -texel.y))).rgb);
+                result = min(result, tex2D(_MainTex, saturate(uv + float2(texel.x, texel.y))).rgb);
+                return result;
+            }
+
+            float3 NeighborhoodMax(float2 uv)
+            {
+                float2 texel = abs(_MainTex_TexelSize.xy);
+                float3 result = tex2D(_MainTex, uv).rgb;
+                result = max(result, tex2D(_MainTex, saturate(uv + float2(-texel.x, 0.0))).rgb);
+                result = max(result, tex2D(_MainTex, saturate(uv + float2(texel.x, 0.0))).rgb);
+                result = max(result, tex2D(_MainTex, saturate(uv + float2(0.0, -texel.y))).rgb);
+                result = max(result, tex2D(_MainTex, saturate(uv + float2(0.0, texel.y))).rgb);
+                result = max(result, tex2D(_MainTex, saturate(uv + float2(-texel.x, -texel.y))).rgb);
+                result = max(result, tex2D(_MainTex, saturate(uv + float2(texel.x, texel.y))).rgb);
+                return result;
+            }
+
+            float3 ClampToNeighborhood(float3 sampleColor, float3 neighborhoodMin, float3 neighborhoodMax)
+            {
+                float3 clamped = clamp(sampleColor, neighborhoodMin, neighborhoodMax);
+                return lerp(sampleColor, clamped, kNeighborhoodClamp);
             }
 
             fixed4 frag(v2f_img i) : SV_Target
@@ -83,23 +120,34 @@ Shader "Hidden/Motion2RGB/DirectionalMotionBlur"
                 float4 previousClip = mul(_PreviousVP, world);
                 if (previousClip.w <= 0.0001) return center;
                 float2 previousUV = DepthUV(previousClip.xy / previousClip.w * 0.5 + 0.5);
-                // Sample toward current image motion to place a trail toward its old position.
+                // Integrate from the current pixel toward its previous image position.
                 float2 trail = (uv0 - previousUV) * _ExposureFraction;
                 float pixelLength = length(trail * abs(_MainTex_TexelSize.zw));
                 trail *= min(1.0, _MaxTrailPixels / max(0.0001, pixelLength));
                 if (pixelLength < 0.1) return center;
+                // A neighborhood clamp prevents a foreground color from leaking into
+                // the background (and vice versa) when a reprojection crosses an edge.
                 float3 sum = center.rgb;
                 float totalWeight = 1.0;
+                float3 neighborhoodMin = NeighborhoodMin(uv0);
+                float3 neighborhoodMax = NeighborhoodMax(uv0);
                 [unroll]
                 for (int tap = 1; tap <= 20; tap++)
                 {
+                    // Preserve the original image-space trail convention so the
+                    // existing camera/RenderTexture setup keeps the same direction.
                     float t = tap / 20.0;
                     float2 sampleUV = uv0 + trail * t;
                     if (any(sampleUV < 0.0) || any(sampleUV > 1.0)) continue;
                     float sampleDepth = LinearEyeDepth(SAMPLE_DEPTH_TEXTURE(_CameraDepthTexture, DepthUV(sampleUV)));
                     float relativeDepth = abs(sampleDepth - centerDepth) / max(centerDepth, 0.25);
-                    float weight = (1.0 - t * 0.6) / (1.0 + relativeDepth * _DepthSensitivity);
-                    sum += tex2D(_MainTex, sampleUV).rgb * weight;
+                    // Fade edge-crossing taps without reducing all motion to zero.
+                    float edgeGate = 1.0 - smoothstep(kDepthRejectThreshold * 0.5, kDepthRejectThreshold, relativeDepth);
+                    float depthGate = max(0.35, edgeGate);
+                    float weight = depthGate / (1.0 + relativeDepth * _DepthSensitivity);
+                    float3 sampleColor = tex2D(_MainTex, sampleUV).rgb;
+                    sampleColor = ClampToNeighborhood(sampleColor, neighborhoodMin, neighborhoodMax);
+                    sum += sampleColor * weight;
                     totalWeight += weight;
                 }
                 // Preserve brightness when depth discontinuities or image borders reject taps.

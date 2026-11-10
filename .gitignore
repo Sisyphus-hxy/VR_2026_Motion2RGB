@@ -63,3 +63,11 @@ __pycache__/
 !.env.example
 .DS_Store
 Thumbs.db
+
+# Optional local campus: scene, imported assets, materials, and previews
+/Assets/Motion2RGB/RealScenes/
+/Assets/Motion2RGB/RealScenes.meta
+/Assets/Motion2RGB/Scenes/Motion2RGB_RealAssetCampus*.unity
+/Assets/Motion2RGB/Scenes/Motion2RGB_RealAssetCampus*.unity.meta
+/Previews/
+/Tools/*.meta

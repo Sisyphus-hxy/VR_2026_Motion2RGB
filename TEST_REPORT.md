@@ -1,5 +1,7 @@
 # Test Report
 
+> 历史报告：以下记录对应早期 Demo 生成器。当前只保留原版机器人场景和厂房直路场景，运行方式见 README；当前检查结果见 `Previews/RetainedScenesValidation.json`。
+
 ## Static checks
 
 - [x] 项目根目录存在 `Assets/`、`Packages/`、`ProjectSettings/`

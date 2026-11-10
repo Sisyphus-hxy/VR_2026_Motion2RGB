@@ -2,11 +2,10 @@
 
 ## Open in Unity
 
-1. Stop Play Mode and open the existing Motion2RGB demo scene.
+1. Stop Play Mode and open `Assets/Motion2RGB/Scenes/Motion2RGB_Robot.unity`.
 2. Wait for FBX/texture import and C# compilation to finish.
-3. Select Tools > Motion2RGB > Create Robot Scene From Current Scene.
-4. The menu saves a separate Motion2RGB_Robot scene and attaches the imported Robot Kyle.
-   Existing scene geometry and controls are copied. The original scene is preserved.
+3. Alternatively select Tools > Motion2RGB > Open Original Robot Scene.
+4. The saved scene already includes Robot Kyle. The old scene creation menu has been retired.
 5. Enter Play Mode. Walk and look down with the mouse to inspect the legs.
    The observer window shows the complete robot. Shift runs; Space jumps.
 
@@ -53,7 +52,10 @@ compilation, directional blur brightness and jump behavior still require Play Mo
   toward the new direction. Head motion and jumps use full camera movement.
 - No running-speed threshold is involved. A stationary camera converges to zero blur.
   Disable `smoothCameraMotion` to compare the direct pose-based response.
-- Increased blur sampling from 12 to 20 taps, retaining brightness normalization.
+- Blur uses 20 internal taps with depth-aware weights and neighborhood color
+  clamping to reduce foreground/background halos.
+- Corrected the reprojection trail direction so samples integrate from the
+  current pixel back toward its previous-frame position.
 - New fields work on existing saved scenes without recreating the robot scene.
 - Runtime and Editor C# were compiled with Unity Roslyn, both exit code 0.
 - `Tools/check_blur_response.py` checks the numerical response at 30/60/120 fps,
